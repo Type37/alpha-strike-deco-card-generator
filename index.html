@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha Strike Card</title>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Share+Tech+Mono&family=Black+Han+Sans&family=Bebas+Neue&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: #f0ece0;
+  background-image: radial-gradient(circle, #bbb 1px, transparent 1px);
+  background-size: 14px 14px;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 16px; padding: 28px 16px 48px;
+  font-family: 'Share Tech Mono', monospace;
+}
+body.bw { background: #e0e0e0; background-image: none; }
+
+.controls { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.btn {
+  font-family: 'Bebas Neue', sans-serif; font-size: 13px; letter-spacing: 2px;
+  padding: 5px 16px; border: 2.5px solid #111; cursor: pointer;
+  background: #FFE033; color: #111; box-shadow: 3px 3px 0 #111;
+  transition: all 0.07s; user-select: none;
+}
+.btn:hover { transform: translate(1px,1px); box-shadow: 2px 2px 0 #111; }
+.btn.pink   { background: #FF2F82; color: #fff; }
+.btn.cobalt { background: #1A3BFF; color: #fff; }
+
+@media print {
+  body { background: white !important; background-image: none !important; padding: 4mm; gap: 4mm; }
+  .controls { display: none; }
+  .card { page-break-inside: avoid; box-shadow: none !important; }
+}
+
+/* ═══════════════════════════════
+   CARD  70mm × 120mm = 264 × 454px
+   ═══════════════════════════════ */
+.card {
+  width: 264px; height: 454px;
+  background: #FAFAF8; border: 3px solid #111;
+  display: flex; flex-direction: column;
+  position: relative; overflow: hidden;
+  box-shadow: 6px 6px 0 #111; flex-shrink: 0;
+}
+.bw .card { background: #fff; }
+
+/* Memphis corner deco */
+.card-deco {
+  position: absolute; top: 0; right: 0;
+  width: 46px; height: 46px; pointer-events: none; z-index: 2;
+}
+.bw .card-deco { display: none; }
+
+/* Global input reset */
+.ein {
+  background: transparent; border: none; outline: none;
+  font-family: inherit; color: inherit; padding: 0;
+}
+.ein::placeholder { color: #ccc; opacity: 1; }
+
+/* ── HEADER ── */
+.card-header {
+  background: #FFE033; border-bottom: 3px solid #111;
+  padding: 4px 8px 3px; position: relative; z-index: 3; flex-shrink: 0;
+}
+.bw .card-header { background: #fff; }
+
+.header-top { display: flex; justify-content: space-between; align-items: flex-start; }
+
+.unit-name-in {
+  font-family: 'Black Han Sans', sans-serif; font-size: 13px;
+  color: #111; text-transform: uppercase; width: 170px; line-height: 1.1;
+}
+.unit-name-in::placeholder { color: #bba020; }
+.bw .unit-name-in::placeholder { color: #ccc; }
+
+.pts-block { flex-shrink: 0; text-align: right; }
+.pts-lbl { font-family: 'Bebas Neue', sans-serif; font-size: 7px; letter-spacing: 2px; color: #888; display: block; }
+.pts-in  { font-family: 'Lilita One', cursive; font-size: 22px; color: #111; width: 44px; text-align: right; line-height: 1; }
+.pts-in::placeholder { color: #bba020; }
+.bw .pts-in::placeholder { color: #ccc; }
+
+.header-stripe {
+  height: 4px;
+  background: repeating-linear-gradient(-45deg, #FF2F82 0, #FF2F82 3px, transparent 3px, transparent 7px);
+  border-bottom: 2px solid #111; flex-shrink: 0;
+}
+.bw .header-stripe { background: #999; }
+
+/* ── SKILL / MV / TMM / TYPE row (all one line) ── */
+.meta-row {
+  display: flex; align-items: stretch;
+  border-bottom: 2px solid #111; flex-shrink: 0;
+}
+.mc {
+  border-right: 1.5px solid #111; padding: 2px 4px 2px;
+  display: flex; flex-direction: column; justify-content: center;
+}
+.mc:last-child { border-right: none; }
+.lbl {
+  font-family: 'Bebas Neue', sans-serif; font-size: 6.5px; letter-spacing: 1.5px; color: #999;
+  display: block; line-height: 1; margin-bottom: 1px;
+}
+.mv { font-family: 'Lilita One', cursive; font-size: 13px; color: #111; line-height: 1; }
+.mv-pair { display: flex; gap: 2px; align-items: baseline; }
+.mv-sep  { font-family: 'Share Tech Mono', monospace; font-size: 7px; color: #ccc; }
+
+.type-in {
+  font-family: 'Share Tech Mono', monospace; font-size: 6px; color: #555;
+  letter-spacing: 1px; text-transform: uppercase; width: 60px; line-height: 1.3;
+}
+.type-in::placeholder { color: #ddd; }
+
+/* ── DAMAGE — single combined row ── */
+.dmg-row {
+  display: flex; border-bottom: 2px solid #111; flex-shrink: 0;
+  background: #1A3BFF;
+}
+.bw .dmg-row { background: #222; }
+
+.dmg-cell {
+  flex: 1; border-right: 1.5px solid rgba(255,255,255,0.2);
+  display: flex; flex-direction: column; align-items: center;
+  padding: 2px 2px 2px;
+}
+.dmg-cell:last-child { border-right: none; }
+
+/* Label line: S <6" +0 all inline */
+.dmg-lbl-line {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 7.5px; color: #fff; letter-spacing: 0.5px;
+  white-space: nowrap; line-height: 1; margin-bottom: 1px;
+}
+.dmg-lbl-line .rng { font-family: 'Share Tech Mono', monospace; font-size: 5px; opacity: 0.75; }
+.dmg-lbl-line .mod { font-family: 'Share Tech Mono', monospace; font-size: 5.5px; opacity: 0.9; }
+
+/* Typeable value box */
+.dmg-val-box {
+  background: rgba(255,255,255,0.15);
+  border: 1.5px solid rgba(255,255,255,0.5);
+  width: 30px; height: 18px;
+  display: flex; align-items: center; justify-content: center;
+}
+.dmg-val-in {
+  font-family: 'Lilita One', cursive; font-size: 14px; color: #fff;
+  text-align: center; width: 28px; line-height: 1;
+}
+.dmg-val-in::placeholder { color: rgba(255,255,255,0.3); }
+.bw .dmg-val-box { border-color: rgba(255,255,255,0.6); }
+
+/* ── HEAT + OV ── */
+.heat-section { border-bottom: 4px solid #111; flex-shrink: 0; }
+
+.heat-wrap { display: flex; align-items: stretch; }
+
+/* ♨ symbol tab */
+.heat-sym {
+  background: #FF2F82; color: #fff;
+  font-size: 13px; line-height: 1;
+  padding: 0 4px;
+  border-right: 2px solid #111;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.bw .heat-sym { background: #444; }
+
+/* OV col — no checkbox */
+.ov-col {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  border-right: 2px solid #111; padding: 2px 4px; flex-shrink: 0; gap: 0;
+}
+.ov-val-in {
+  font-family: 'Lilita One', cursive; font-size: 13px; color: #111;
+  width: 20px; text-align: center;
+}
+.ov-val-in::placeholder { color: #ddd; }
+
+/* Heat level columns */
+.ht-cols { flex: 1; display: flex; }
+.ht-col {
+  flex: 1; border-right: 1px solid #ddd;
+  display: flex; flex-direction: column; align-items: center; padding: 2px 1px 2px;
+}
+.ht-col:last-child { border-right: none; }
+.ht-col.sd-col { background: #fff5f7; }
+
+.ht-head { display: flex; align-items: center; gap: 2px; margin-bottom: 2px; }
+.ht-num {
+  font-family: 'Bebas Neue', sans-serif; font-size: 10px; color: #FF2F82; line-height: 1;
+}
+.bw .ht-num { color: #111; }
+.ht-num.sd { color: #FF2F82; }
+
+.ht-chk {
+  width: 8px; height: 8px; border: 1.5px solid #111;
+  background: #fff; cursor: pointer; flex-shrink: 0;
+}
+.ht-chk.checked { background: #FF2F82; }
+.ht-chk.sd-chk  { border-color: #FF2F82; }
+.bw .ht-chk.checked { background: #333; }
+
+.ht-mod {
+  font-family: 'Share Tech Mono', monospace; font-size: 5px; color: #444;
+  line-height: 1.5; text-align: center;
+}
+.ht-mod.sd-mod {
+  font-family: 'Bebas Neue', sans-serif; font-size: 5px;
+  color: #FF2F82; letter-spacing: 0.3px; line-height: 1.4; text-align: center;
+}
+.bw .ht-mod.sd-mod { color: #333; }
+
+/* ── ARMOR / STRUCTURE ── */
+.as-section { border-bottom: 2px solid #111; flex-shrink: 0; }
+.as-row {
+  display: flex; align-items: stretch;
+  border-bottom: 1.5px solid #111; min-height: 20px;
+}
+.as-row:last-child { border-bottom: none; }
+
+.as-tab { width: 5px; flex-shrink: 0; }
+.as-tab.arm { background: #00C4B0; }
+.as-tab.str { background: #FF2F82; }
+.bw .as-tab.arm { background: #888; }
+.bw .as-tab.str { background: #444; }
+
+.as-lbl {
+  width: 32px; display: flex; align-items: center; justify-content: center;
+  border-left: 1.5px solid #111; border-right: 1.5px solid #111;
+  background: #f4f4f2;
+  font-family: 'Bebas Neue', sans-serif; font-size: 6px; letter-spacing: 1px; color: #555;
+}
+.as-val-col {
+  width: 24px; display: flex; align-items: center; justify-content: center;
+  border-right: 1.5px solid #111;
+}
+.as-val-in {
+  font-family: 'Lilita One', cursive; font-size: 12px; color: #111;
+  width: 20px; text-align: center;
+}
+.as-val-in::placeholder { color: #ddd; }
+
+.pip-area {
+  flex: 1; display: flex; flex-wrap: wrap;
+  align-items: center; padding: 3px 4px; gap: 3px;
+}
+.pip-group { display: flex; gap: 3px; flex-shrink: 0; }
+.pip-group + .pip-group { margin-left: 4px; }
+
+.pip {
+  width: 10px; height: 10px; border-radius: 50%;
+  border: 1.5px solid #111; background: #fff;
+  cursor: pointer; flex-shrink: 0; transition: background 0.08s;
+}
+.pip.str-pip { border-radius: 2px; }
+.pip.hit { background: #FF2F82; }
+.bw .pip.hit { background: #333; }
+
+/* ── CRITICALS — squeezed ── */
+.crits-section { border-bottom: 2px solid #111; flex-shrink: 0; }
+
+.sec-bar { display: flex; align-items: center; border-bottom: 1.5px solid #111; }
+.sec-pill {
+  font-family: 'Bebas Neue', sans-serif; font-size: 7.5px; letter-spacing: 1.5px;
+  padding: 1px 5px; border-right: 1.5px solid #111; flex-shrink: 0;
+}
+.bg-pink   { background: #FF2F82; color: #fff; }
+.bg-cobalt { background: #1A3BFF; color: #fff; }
+.bg-teal   { background: #00C4B0; color: #111; }
+.bw .bg-pink, .bw .bg-cobalt, .bw .bg-teal { background: #333; color: #fff; }
+.sec-ref { font-family: 'Share Tech Mono', monospace; font-size: 5px; color: #bbb; padding: 0 4px; letter-spacing: 1px; }
+
+.crit-row {
+  display: flex; align-items: center;
+  border-bottom: 1px solid #ebebeb; padding: 1px 0;
+}
+.crit-row:last-child { border-bottom: none; }
+
+.crit-roll {
+  width: 20px; flex-shrink: 0;
+  font-family: 'Bebas Neue', sans-serif; font-size: 7px; color: #1A3BFF;
+  text-align: center; background: #f4f4f2;
+  border-right: 1px solid #ddd; align-self: stretch;
+  display: flex; align-items: center; justify-content: center;
+}
+.bw .crit-roll { color: #111; }
+
+.crit-name {
+  font-family: 'Bebas Neue', sans-serif; font-size: 7px; color: #111;
+  letter-spacing: 0.3px; padding: 0 3px; flex: 1; white-space: nowrap;
+  overflow: hidden;
+}
+
+.crit-boxes { display: flex; gap: 2px; padding: 0 3px; flex-shrink: 0; }
+.crit-chk {
+  width: 8px; height: 8px;
+  border: 1.5px solid #111; background: #fff;
+  cursor: pointer; flex-shrink: 0;
+}
+.crit-chk.hit { background: #FF2F82; }
+.bw .crit-chk.hit { background: #333; }
+
+/* ── SPECIALS ── */
+.specials-section { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.specials-body { flex: 1; padding: 3px 6px 3px; display: flex; flex-direction: column; }
+.specials-in {
+  font-family: 'Share Tech Mono', monospace; font-size: 7px; color: #111;
+  background: transparent; border: none; outline: none;
+  width: 100%; line-height: 1.6; resize: none; flex: 1;
+}
+.specials-in::placeholder { color: #ccc; }
+
+/* ── FOOTER ── */
+.card-footer {
+  background: #111; padding: 2px 7px;
+  display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+}
+.footer-txt { font-family: 'Bebas Neue', sans-serif; font-size: 6px; letter-spacing: 1.5px; color: #FFE033; }
+.bw .card-footer { background: #333; }
+.bw .footer-txt  { color: #fff; }
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <button class="btn"    id="theme-btn" onclick="toggleTheme()">⬛ B&W MODE</button>
+  <button class="btn pink"   onclick="addCard()">+ ADD CARD</button>
+  <button class="btn cobalt" onclick="copyCard()">📋 COPY IMAGE</button>
+  <button class="btn"        onclick="window.print()">⎙ PRINT</button>
+</div>
+
+<div id="cards-container"></div>
+
+<script>
+let isBW = false;
+
+function toggleTheme() {
+  isBW = !isBW;
+  document.body.classList.toggle('bw', isBW);
+  document.getElementById('theme-btn').textContent = isBW ? '🟡 MEMPHIS MODE' : '⬛ B&W MODE';
+}
+
+async function copyCard() {
+  const card = document.querySelector('.card');
+  if (!card) return;
+  const btn = document.querySelector('.btn.cobalt');
+  const orig = btn.textContent;
+  btn.textContent = '…';
+  try {
+    const canvas = await html2canvas(card, { scale: 4, useCORS: true, backgroundColor: '#FAFAF8' });
+    canvas.toBlob(async blob => {
+      try {
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+        btn.textContent = '✓ COPIED!';
+      } catch {
+        window.open(URL.createObjectURL(blob));
+        btn.textContent = orig;
+      }
+      setTimeout(() => btn.textContent = orig, 2200);
+    }, 'image/png');
+  } catch(e) { btn.textContent = orig; }
+}
+
+function renderPips(area, n, type) {
+  area.innerHTML = '';
+  const count = Math.max(0, Math.min(parseInt(n) || 0, 30));
+  let group = null;
+  for (let i = 0; i < count; i++) {
+    if (i % 4 === 0) {
+      group = document.createElement('div');
+      group.className = 'pip-group';
+      area.appendChild(group);
+    }
+    const p = document.createElement('div');
+    p.className = 'pip' + (type === 'str' ? ' str-pip' : '');
+    p.onclick = () => p.classList.toggle('hit');
+    group.appendChild(p);
+  }
+}
+
+function makeCheckboxes(n) {
+  const wrap = document.createElement('div');
+  wrap.className = 'crit-boxes';
+  for (let i = 0; i < n; i++) {
+    const b = document.createElement('div');
+    b.className = 'crit-chk';
+    b.onclick = () => b.classList.toggle('hit');
+    wrap.appendChild(b);
+  }
+  return wrap;
+}
+
+function makeCard() {
+  const card = document.createElement('div');
+  card.className = 'card';
+
+  card.innerHTML = `
+    <svg class="card-deco" viewBox="0 0 46 46" fill="none">
+      <polygon points="46,0 46,30 17,0" fill="#FFE033" opacity="0.75"/>
+      <polygon points="46,0 46,15 31,0" fill="#FF2F82"/>
+      <circle cx="7" cy="36" r="4" fill="#1A3BFF" opacity="0.4"/>
+      <circle cx="17" cy="42" r="2.5" fill="#00C4B0" opacity="0.55"/>
+    </svg>
+
+    <!-- HEADER: name + PTS only -->
+    <div class="card-header">
+      <div class="header-top">
+        <input class="ein unit-name-in" type="text" placeholder="UNIT NAME">
+        <div class="pts-block">
+          <span class="pts-lbl">PTS</span>
+          <input class="ein pts-in" type="text" placeholder="00">
+        </div>
+      </div>
+    </div>
+    <div class="header-stripe"></div>
+
+    <!-- SKILL / MV / TMM / TYPE all on one line -->
+    <div class="meta-row">
+      <div class="mc" style="flex:0 0 38px;">
+        <span class="lbl">SKILL</span>
+        <input class="ein mv" type="text" placeholder="4" style="width:30px;font-size:14px;">
+      </div>
+      <div class="mc" style="flex:1;">
+        <span class="lbl">MV</span>
+        <div class="mv-pair">
+          <input class="ein mv" type="text" placeholder='6"' style="width:28px;font-size:13px;">
+          <span class="mv-sep">/</span>
+          <input class="ein mv" type="text" placeholder="—" style="width:22px;font-size:11px;color:#aaa;">
+        </div>
+      </div>
+      <div class="mc" style="flex:0 0 36px;text-align:center;">
+        <span class="lbl">TMM</span>
+        <input class="ein mv" type="text" placeholder="2" style="width:30px;text-align:center;font-size:14px;">
+      </div>
+      <div class="mc" style="flex:0 0 68px;">
+        <span class="lbl">TYPE / ROLE</span>
+        <input class="ein type-in" type="text" placeholder="MECH / STRIKER">
+      </div>
+    </div>
+
+    <!-- DAMAGE: header + typeable value, all in one row -->
+    <div class="dmg-row">
+      <div class="dmg-cell">
+        <div class="dmg-lbl-line">S <span class="rng">&lt;6"</span> <span class="mod">+0</span></div>
+        <div class="dmg-val-box">
+          <input class="ein dmg-val-in" type="text" placeholder="0">
+        </div>
+      </div>
+      <div class="dmg-cell">
+        <div class="dmg-lbl-line">M <span class="rng">6–24"</span> <span class="mod">+2</span></div>
+        <div class="dmg-val-box">
+          <input class="ein dmg-val-in" type="text" placeholder="0">
+        </div>
+      </div>
+      <div class="dmg-cell">
+        <div class="dmg-lbl-line">L <span class="rng">&gt;24"</span> <span class="mod">+4</span></div>
+        <div class="dmg-val-box">
+          <input class="ein dmg-val-in" type="text" placeholder="0">
+        </div>
+      </div>
+    </div>
+
+    <!-- HEAT + OV -->
+    <div class="heat-section">
+      <div class="heat-wrap">
+        <div class="heat-sym">♨</div>
+        <div class="ov-col">
+          <span class="lbl">OV</span>
+          <input class="ein ov-val-in" type="text" placeholder="0">
+        </div>
+        <div class="ht-cols">
+          <div class="ht-col">
+            <div class="ht-head"><span class="ht-num">1</span><div class="ht-chk"></div></div>
+            <div class="ht-mod">+1 TN<br>−2" MV</div>
+          </div>
+          <div class="ht-col">
+            <div class="ht-head"><span class="ht-num">2</span><div class="ht-chk"></div></div>
+            <div class="ht-mod">+2 TN<br>−1 TMM<br>−4" MV</div>
+          </div>
+          <div class="ht-col">
+            <div class="ht-head"><span class="ht-num">3</span><div class="ht-chk"></div></div>
+            <div class="ht-mod">+3 TN<br>−1 TMM<br>−6" MV</div>
+          </div>
+          <div class="ht-col sd-col">
+            <div class="ht-head"><span class="ht-num sd">4</span><div class="ht-chk sd-chk"></div></div>
+            <div class="ht-mod sd-mod">SHUT<br>DOWN<br>−4 TMM</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ARMOR / STRUCTURE -->
+    <div class="as-section">
+      <div class="as-row">
+        <div class="as-tab arm"></div>
+        <div class="as-lbl">ARMOR</div>
+        <div class="as-val-col"><input class="ein as-val-in armor-val" type="text" placeholder="0"></div>
+        <div class="pip-area armor-pips"></div>
+      </div>
+      <div class="as-row">
+        <div class="as-tab str"></div>
+        <div class="as-lbl">STRUCT</div>
+        <div class="as-val-col"><input class="ein as-val-in struct-val" type="text" placeholder="0"></div>
+        <div class="pip-area struct-pips"></div>
+      </div>
+    </div>
+
+    <!-- CRITICALS -->
+    <div class="crits-section">
+      <div class="sec-bar">
+        <div class="sec-pill bg-pink">CRITS</div>
+        <span class="sec-ref">MECHS [P.50]</span>
+      </div>
+    </div>
+
+    <!-- SPECIALS -->
+    <div class="specials-section">
+      <div class="sec-bar">
+        <div class="sec-pill bg-teal">SPECIAL ABILITIES</div>
+      </div>
+      <div class="specials-body">
+        <textarea class="specials-in" placeholder="ENE  MHQ1  SRCH  TAG  REAR 1/1/—&#10;notes..."></textarea>
+      </div>
+    </div>
+
+    <div class="card-footer">
+      <span class="footer-txt">BATTLETECH · ALPHA STRIKE CE</span>
+      <span class="footer-txt">©TOPPS / CGL</span>
+    </div>
+  `;
+
+  /* Crit rows */
+  const critsSection = card.querySelector('.crits-section');
+  const critData = [
+    { roll: '2',    name: 'AMMO HIT',   boxes: 1 },
+    { roll: '3,11', name: 'ENGINE HIT', boxes: 2 },
+    { roll: '4,10', name: 'FIRE CTRL',  boxes: 2 },
+    { roll: '5,9',  name: 'WPNS HIT',  boxes: 4 },
+    { roll: '6,8',  name: 'MP HIT',     boxes: 2 },
+    { roll: '12',   name: 'DESTROYED',  boxes: 1 },
+  ];
+  critData.forEach(({ roll, name, boxes }) => {
+    const row = document.createElement('div');
+    row.className = 'crit-row';
+    row.innerHTML = `<div class="crit-roll">${roll}</div><div class="crit-name">${name}</div>`;
+    row.appendChild(makeCheckboxes(boxes));
+    critsSection.appendChild(row);
+  });
+
+  /* Dynamic pips */
+  const armVal = card.querySelector('.armor-val');
+  const strVal = card.querySelector('.struct-val');
+  const armPips = card.querySelector('.armor-pips');
+  const strPips = card.querySelector('.struct-pips');
+  armVal.addEventListener('input', () => renderPips(armPips, armVal.value, 'arm'));
+  strVal.addEventListener('input', () => renderPips(strPips, strVal.value, 'str'));
+  armVal.value = '8'; renderPips(armPips, 8, 'arm');
+  strVal.value = '3'; renderPips(strPips, 3, 'str');
+
+  /* Heat checkboxes */
+  card.querySelectorAll('.ht-chk').forEach(b => b.onclick = () => b.classList.toggle('checked'));
+
+  return card;
+}
+
+function addCard() {
+  document.getElementById('cards-container').appendChild(makeCard());
+}
+
+addCard();
+</script>
+</body>
+</html>
